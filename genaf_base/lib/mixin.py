@@ -11,5 +11,7 @@ class BatchMixIn(object):
 	pass
 
 class SampleMixIn(object):
-	pass
+
+	def __repr__(self):
+		return '<%s|%d|%s>' % (self.__class__.__name__, self.id, self.code)
 

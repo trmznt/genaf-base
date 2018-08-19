@@ -5,11 +5,13 @@ log = logging.getLogger(__name__)
 from rhombus.lib.utils import random_string, silent_remove
 from rhombus.lib.roles import SYSADM, DATAADM, SYSVIEW, DATAVIEW
 
-from spatools.lib.utils import detect_buffer
+from genaf_base.lib.utils import detect_buffer
 
 from genaf_base.views import *
 from genaf_base.lib.dictfmt import csv2dict
 #from genaf_base.views import uploadmgr
+
+from genaf_base.views.sample import format_sampleinfo
 
 import os, json, yaml, sys
 from io import StringIO
@@ -48,8 +50,32 @@ class BatchViewer(object):
     def save(self):
         pass
 
+    @m_roles( PUBLIC )
     def view(self):
-        pass
+
+        objid = int(self.request.matchdict.get('id'))
+        if objid <= 0:
+            return error_page('Please provide batch ID')
+
+        batch = self.dbh.get_batch_by_id(objid)
+        html = div()[
+            h2('Batch: %s' % batch.code),
+            table()[
+                tr()[ td('Group: '), td( batch.group.name)
+                    ],
+                tr()[ td('No of sample: '), td('%d' % batch.samples.count())
+                    ],
+            ]
+        ]
+        jscode = ''
+
+        return render_to_response( "genaf_base:templates/generics/page.mako",
+            {   'batch': batch,
+                'html': html,
+                'jscode': jscode
+            },
+            request = self.request )
+
 
 
     def get_batch(self):
@@ -79,7 +105,7 @@ def generate_batch_table(batches, request):
                 td( a(batch.code, href=request.route_url('genaf.batch-view', id=batch.id)) ),
                 td( batch.description or '-' ),
                 td( a(batch.samples.count(),
-                        href=request.route_url('genaf.sample', _query = {'batch_id': batch.id}))),
+                        href=request.route_url('genaf.sample', _query = {'q': '%d[batch_id]' % batch.id}))),
                 td( a(batch.group.name,
                         href=request.route_url('rhombus.group-view', id=batch.group.id))),
                 td( 'public' if batch.public else 'private'),
@@ -133,7 +159,6 @@ def view(request):
         {   'batch': batch,
         },
         request = request )
-
 
 
 @roles( PUBLIC )

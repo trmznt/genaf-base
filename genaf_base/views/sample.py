@@ -4,12 +4,15 @@ log = logging.getLogger(__name__)
 
 from rhombus.lib.utils import cerr, cout
 from rhombus.views.generics import error_page
+from rhombus.lib.roles import SYSADM, DATAADM
 
 from genaf_base.views import *
 
 import json
 import sqlalchemy.exc, transaction
 
+from genaf_base.lib.query import Selector
+from genaf_base.lib.query2dict import query2dict
 
 class SampleViewer(object):
 
@@ -18,8 +21,33 @@ class SampleViewer(object):
         self.dbh = get_dbhandler()
         self.sample = None
 
+
+    @m_roles( PUBLIC )
     def index(self):
-        pass
+        
+        # parse filter form
+        filters = self.parse_filter_form()
+
+        form, jscode = self.get_filter_form(filters)
+
+        if not filters:
+
+            samples = []
+            html = 'Please provide a query to filter samples.'
+
+        else:
+
+            samples = self.get_samples( filters )
+            html, jscode = format_sampleinfo( samples, self.request )
+
+        return render_to_response("genaf_base:templates/sample/index.mako",
+                    {   'samples': samples,
+                        'form': form,
+                        'html': html,
+                        'code': jscode,
+                    },
+                    request = self.request)
+
 
     def action(self):
         pass
@@ -32,6 +60,47 @@ class SampleViewer(object):
 
     def view(self):
         pass
+
+
+    def get_samples(self, filters):
+
+        if self.request.user.has_roles(SYSADM, DATAADM):
+            selector = Selector( private=True )
+        else:
+            selector = Selector( group_ids = self.request.user.group_ids)
+
+        return selector.spec_to_samples(filters, self.dbh)
+
+        dbh = self.dbh
+
+        q = dbh.Sample.query(dbh.session())
+
+        if 'batch_id' in filters:
+            q = q.join(dbh.Batch).filter(dbh.Batch.id == filters['batch_id'])
+        elif 'batch_code' in filters:
+            q = q.join(dbh.Batch).filter(dbh.Batch.code == filters['batch_code'])
+
+        if 'location_id' in filters:
+            q = q.filter( dbh.Sample.location_id == filters['location_id'])
+
+        return q.all()
+
+
+    def get_filter_form(self, filters):
+
+        filter_form = form('genaf.sample-filter')
+
+        return filter_form, ''
+
+
+    def parse_filter_form(self):
+
+        querytext = self.request.params.get('q', '')
+        if not querytext:
+            return None
+
+        specs = query2dict( querytext )
+        return specs['all']
 
 
 @roles( PUBLIC )
