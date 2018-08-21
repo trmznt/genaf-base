@@ -14,6 +14,7 @@ import sqlalchemy.exc, transaction
 from genaf_base.lib.query import Selector
 from genaf_base.lib.query2dict import query2dict
 
+
 class SampleViewer(object):
 
     def __init__(self, request):
@@ -24,7 +25,7 @@ class SampleViewer(object):
 
     @m_roles( PUBLIC )
     def index(self):
-        
+
         # parse filter form
         filters = self.parse_filter_form()
 
@@ -59,7 +60,34 @@ class SampleViewer(object):
         pass
 
     def view(self):
-        pass
+        """ show sample info data in columnar format """
+
+        sample = self.get_sample()
+
+        form = self.sample_form( sample )
+
+        return render_to_response("genaf_base:templates/generics/page.mako",
+                {   'sample': sample,
+                    'html': form,
+                },
+                request = self.request)
+
+
+    def get_sample(self):
+
+        sample_id = int(self.request.matchdict.get('id'))
+        sample = get_dbhandler().get_sample_by_id( sample_id )
+
+        if not sample:
+            raise RuntimeError(
+                'Can not find sample with id: %d' % sample_id)
+
+        if not self.request.user.in_group( sample.batch.group_id ):
+            if not self.request.user.has_roles(SYSADM, DATAADM):
+                raise not_authorized(self.request,
+                    'You are not authorized to see this sample!')
+
+        return sample
 
 
     def get_samples(self, filters):
@@ -101,6 +129,26 @@ class SampleViewer(object):
 
         specs = query2dict( querytext )
         return specs['all']
+
+
+    def sample_form(self, sample):
+
+        sform = form('genaf_base/sample', method='POST')
+        sform.add(
+
+            # hidden field
+            fieldset(
+                input_hidden(name='genaf_base-sample_id', value=sample.id),
+            ),
+
+            fieldset(
+                input_text('genaf_base-sample_code', 'Code', value=sample.code, offset=2),
+                input_text('genaf_base-subject_code', 'Subject',
+                    value=sample.subject.code, offset=2, static=True),
+            )
+        )
+
+        return sform
 
 
 @roles( PUBLIC )
