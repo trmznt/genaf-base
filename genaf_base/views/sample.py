@@ -17,10 +17,19 @@ from genaf_base.lib.query2dict import query2dict
 
 class SampleViewer(object):
 
+    extension_viewer = None
+
+
     def __init__(self, request):
         self.request = request
         self.dbh = get_dbhandler()
         self.sample = None
+
+
+    @classmethod
+    def set_extension_viewer(cls, viewer_class):
+        """ this will set a new viewer_class extension """
+        cls.extension_viewer = viewer_class
 
 
     @m_roles( PUBLIC )
@@ -65,10 +74,14 @@ class SampleViewer(object):
         sample = self.get_sample()
 
         form = self.sample_form( sample )
+        html = form
+
+        if self.extension_viewer:
+            self.extension_viewer(request, sample).extend( html )
 
         return render_to_response("genaf_base:templates/generics/page.mako",
                 {   'sample': sample,
-                    'html': form,
+                    'html': html,
                 },
                 request = self.request)
 
