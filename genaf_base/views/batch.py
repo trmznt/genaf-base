@@ -27,8 +27,15 @@ class BatchViewer(object):
 
     @m_roles( PUBLIC )
     def index(self):
+
+        group_id = int(self.request.params.get('group_id', 0))
+        if group_id:
+            if self.request.user.in_group(group_id):
+                batches = self.dbh.get_batches( groups = [(None, group_id)] )
+            else:
+                return error_page('You do noh have access to view batches that belong to this group.')
           
-        if self.request.user.has_roles( SYSADM, DATAADM, SYSVIEW, DATAVIEW ):
+        elif self.request.user.has_roles( SYSADM, DATAADM, SYSVIEW, DATAVIEW ):
             batches = self.dbh.get_batches( groups = None )
         else:
             batches = self.dbh.get_batches( groups = self.request.user.groups )
@@ -107,7 +114,7 @@ def generate_batch_table(batches, request):
                 td( a(batch.samples.count(),
                         href=request.route_url('genaf.sample', _query = {'q': '%d[batch_id]' % batch.id}))),
                 td( a(batch.group.name,
-                        href=request.route_url('rhombus.group-view', id=batch.group.id))),
+                        href=request.route_url('genaf.batch', _query = {'group_id': batch.group.id}))),
                 td( 'public' if batch.public else 'private'),
             )
         )
