@@ -10,9 +10,9 @@ from rhombus.models.core import set_func_userid
 
 # set configuration and dbhandler
 from genaf_base.scripts import run
-from genaf_base.lib.procmgmt import init_queue
 from genaf_base.lib import helpers as h
 from genaf_base.lib.configs import set_temp_path, get_temp_path, TEMP_TOOLS
+from genaf_base.lib.taskqueue import init_taskqueue, init_taskcache
 
 # initialize view
 from genaf_base.views import *
@@ -63,9 +63,6 @@ def includeme( config ):
     # subscriber
     config.add_subscriber( add_genaf_global, BeforeRender )
 
-def set_task_cache(dummy):
-    pass
-
 
 def init_app(global_config, settings, prefix='/mgr', include=None, include_tags=None):
 
@@ -78,19 +75,16 @@ def init_app(global_config, settings, prefix='/mgr', include=None, include_tags=
     set_func_userid( generic_userid_func)
 
     # preparing for multiprocessing
-    init_queue(settings)
+    #init_queue(settings)
 
     # init taks cache, which provides a rudimentary caching for result coming
     # from worker process.
     # note that this mechanism is ony suitable for single wsgi worker - multiple
     # proc workers
+    init_taskcache( settings )
+    init_taskqueue( settings )
 
-    taskcache = dogpile.cache.make_region(
-        key_mangler = dogpile.cache.util.sha1_mangle_key
-    )
 
-    taskcache.configure_from_config(settings, "genaf.taskcache.")
-    set_task_cache(taskcache)
 
     # attach rhombus to /mgr url, include custom configuration
     config = rhombus_init_app(global_config, settings, prefix
