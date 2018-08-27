@@ -3,6 +3,7 @@ from rhombus.models import handler as rhombus_handler
 from rhombus.lib.utils import cerr, cout
 
 from genaf_base.models import dbschema
+from sqlalchemy import or_
 
 from .setup import setup
 
