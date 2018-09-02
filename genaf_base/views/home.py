@@ -3,8 +3,6 @@ from genaf_base.views import *
 
 from rhombus.views.home import login as rb_login, logout as rb_logout
 
-from .post import list_posts
-
 @roles( PUBLIC )
 def index(request):
 
