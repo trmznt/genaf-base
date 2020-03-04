@@ -18,7 +18,7 @@ def render_analyze_menu(request):
 		[
 			("Allele Frequency", "/tools/allele"),
 			("Haplotype Analysis", "/tools/haplotype"),
-			("FST Analysis", "tools/fst"),
+			("FST Analysis", "/tools/fst"),
 			("PI (diversity) Analysis", "/tools/pi"),
 			("PCA/PCoA", "/tools/pca"),
 			("NJ Tree", "/tools/nj"),
