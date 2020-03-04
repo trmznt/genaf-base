@@ -28,7 +28,7 @@ def load_params( d ):
         elif k == 'filter':
             instances['filter'] = _FILTER_CLASS_.from_dict( d[k] )
         elif k == 'differentiator':
-        	instances['differentiator'] = _DIFFERENTIATOR_CLASS_.from_dict( d[k] )
+            instances['differentiator'] = _DIFFERENTIATOR_CLASS_.from_dict( d[k] )
         elif k == 'options':
             instances['options'] = d[k]
         else:
@@ -38,6 +38,13 @@ def load_params( d ):
 
 
 class Query(object):
+    """ Query translate specs into actual selector, filter and differentiator
+    """
+
+    def __init__(self, specs, dbhandler, **kwargs):
+        self.specs = load_params(specs)
+        self.dbhandler = dbhandler
+        self.kwargs = kwargs
 
     def get_sample_sets(self, sample_ids = None):
         if self._sample_sets is None or sample_ids:
@@ -155,6 +162,7 @@ class FieldBuilder(object):
                 self._dbh.Location )
 
     # sample access control
+
     def group_ids(self, arg):
         return ( self._dbh.Batch.group_id.in_( arg ), self._dbh.Batch )
 
@@ -269,7 +277,7 @@ class Selector(object):
 
 
 class Filter(object):
-	pass
+    pass
 
 
 class Differentiator(object):
@@ -409,15 +417,11 @@ _DIFFERENTIATOR_CLASS_ = Differentiator
 
 
 def set_query_class( selector_class=None, filter_class=None, differentiator_class=None ):
-	global _SELECTOR_CLASS_, _FILTER_CLASS_, _DIFFERENTIATOR_CLASS_
-	if selector_class:
-		_SELECTOR_CLASS_ = selector_class
-	if filter_class:
-		_FILTER_CLASS_ = filter_class
-	if differentiator_class:
-		_DIFFERENTIATOR_CLASS_ = differentiator_class
-
-
-
-
+    global _SELECTOR_CLASS_, _FILTER_CLASS_, _DIFFERENTIATOR_CLASS_
+    if selector_class:
+        _SELECTOR_CLASS_ = selector_class
+    if filter_class:
+        _FILTER_CLASS_ = filter_class
+    if differentiator_class:
+        _DIFFERENTIATOR_CLASS_ = differentiator_class
 
