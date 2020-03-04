@@ -18,14 +18,23 @@ def render_analyze_menu(request):
 		[
 			("Allele Frequency", "/tools/allele"),
 			("Haplotype Analysis", "/tools/haplotype"),
+			("FST Analysis", "tools/fst"),
+			("PI (diversity) Analysis", "/tools/pi"),
 			("PCA/PCoA", "/tools/pca"),
+			("NJ Tree", "/tools/nj"),
+			("COI Analysis", "/tools/coi")
 		],
 		request
 	)
 
 
 def render_utility_menu(request):
-	pass
+	return create_utility_menu("Utility", "/utility",
+		[
+			("Export data", "/util/export"),
+		],
+		request
+	)
 
 def create_nav_menu(label, href, dropdowns, request):
 	menu = li(a(label, href=href, class_="nav-link dropdown-toggle",
