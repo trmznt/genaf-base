@@ -15,6 +15,7 @@ requires = [
     'pyramid_tm',
     'SQLAlchemy',
     'transaction',
+    'attrs',
     'rhombus'
     ]
 
