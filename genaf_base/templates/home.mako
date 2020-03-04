@@ -6,28 +6,28 @@
 
 <div class="card-deck">
 
-<a class="card" href="#">
+<a class="card" href="/batch">
 	<div class="card-body text-center">
 		<h4 class="card-title">Manage data</h5>
 		<p class="card-text">Browse your data here</p>
 	</div>
 </a>
 
-<a class="card" href="#">
+<a class="card" href="/analysis">
 	<div class="card-body text-center">
 		<h4 class="card-title">Analyze data</h5>
 		<p class="card-text">Analyze your data here</p>
 	</div>
 </a>
 
-<a class="card" href="#">
+<a class="card" href="/locus">
 	<div class="card-body text-center">
 		<h4 class="card-title">Browse locus</h4>
 		<p class="card-text">Browse your locus here</p>
 	</div>
 </a>
 
-<a class="card" href="#">
+<a class="card" href="/panel">
 	<div class="card-body text-center">
 		<h4 class="card-title">Browse panel</h4>
 		<p class="card-text">Browse your panel here</p>
