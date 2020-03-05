@@ -74,10 +74,10 @@ class SampleViewer(object):
         sample = self.get_sample()
 
         form = self.sample_form( sample )
-        html = form
+        html = div(form)
 
         if self.extension_viewer:
-            self.extension_viewer(request, sample).extend( html )
+            self.extension_viewer(self.request, sample).extend( html )
 
         return render_to_response("genaf_base:templates/generics/page.mako",
                 {   'sample': sample,
