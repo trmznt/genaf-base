@@ -4,7 +4,7 @@ from genaf_base.lib.query import Selector, Query
 from rhombus.lib.tags import *
 from rhombus.lib.utils import get_dbhandler
 from rhombus.views import m_roles
-from rhombus.lib.roles import PUBLIC
+from rhombus.lib.roles import *
 from pyramid.renderers import render_to_response
 
 
@@ -80,13 +80,71 @@ class AnalyticViewer(object):
 
         )
 
+        # sample source & processing
+
+        if self.request.user.has_roles( SYSADM, DATAADM, SYSVIEW, DATAVIEW ):
+            batches = self.dbh.get_batches( groups = None )
+        else:
+            batches = self.dbh.get_batches( groups = self.request.user.groups )
+
+        qform.get('genaf-query.sample-source').add(
+
+            input_select('genaf-query.batch_ids', 'Batch code(s)', offset=2, size=3,
+                value=params.get('genaf-query.batches', None),
+                options = [ (b.id, b.code) for b in batches ],
+                multiple=True,
+            ),
+
+        )
+
+        qform.get('genaf-query.sample-processing').add(
+
+            input_select('genaf-query.sample_selection', 'Sample selection',
+                offset=2, size=3,
+                value='N',
+                options = [ ('N', 'No futher sample selection'),
+                            ('M', 'Monoclonal samples'),
+                        ]
+                ),
+
+            input_text('genaf-query.sample_quality', 'Sample quality threshold',
+                offset=2, size=3,
+                value=params.get('genaf-query.sample_quality', 0.9)
+            ),
+
+            input_select('genaf-query.spatial_differentiation', 'Spatial differentiation',
+                offset=2, size=3,
+                value=-1,
+                options = [ (-1, 'No spatial differentiation'),
+                            (0, 'Country level'),
+                            (1, '1st Administration level'),
+                            (2, '2nd Administration level'),
+                            (3, '3rd Administration level'),
+                            (4, '4th Administration level') ]
+                ),
+
+            input_select('genaf-query.temporal_differentiation', 'Temporal differentiation',
+                offset=2, size=3,
+                value=0,
+                options = [ (0, 'No temporal differentiation'),
+                            (1, 'Yearly'),
+                            (2, 'Quaterly')]
+                ),
+        )
+
+
         return qform, jscode
 
 
     def parse_form(self, params):
         """ return a dict containing all parameters """
 
-        return {}
+        d = {}
+
+        d['batch_ids'] = params.get('genaf-query.batch_ids')
+        # XXX: we need to check batch_ids here
+
+        return d
 
 
     def params2specs_XXX(self, params):
@@ -112,7 +170,10 @@ class AnalyticViewer(object):
 def params2specs(params, group_ids=None):
     """ convert params (dictionary from web-form) to dict-bases specs """
     selector = {
+        # all group_ids where a user belongs to
         'group_ids': group_ids,
+
+        # all batch_ids where sample will be fetched from
         'batch_ids': params.get('batch_ids', None)
     }
     return { 'selector': selector }
@@ -127,5 +188,3 @@ def analysis_task(callback, userinstance, specs, namespace):
     q = dbh.Query(specs, dbh)
     ok = callback( q, userinstance, namespace )
     return ok
-
-
