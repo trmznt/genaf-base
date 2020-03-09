@@ -40,6 +40,15 @@ def includeme( config ):
 
     # add additional routes and views here
 
+    add_route_view( config, 'rhombus.views.fso', 'rhombus.fso',
+        '/fso{path:.*}@@view',
+        '/fso{path:.*}@@edit',
+        '/fso{path:.*}@@save',
+        '/fso{path:.*}@@action',
+        ('/fso{path:.*}', 'index'),
+    )
+
+
     add_route_view_class( config, 'genaf_base.views.batch.BatchViewer', 'genaf.batch',
         '/batch',
         '/batch/@@action',
@@ -58,6 +67,9 @@ def includeme( config ):
 
     )
 
+    # analysis part
+    config.add_route('analysis-samplesummary', '/analysis/samplesummary')
+    config.add_view('genaf_base.views.analysis.samplesummary.SampleSummary', route_name='analysis-samplesummary')
 
 
     # subscriber
