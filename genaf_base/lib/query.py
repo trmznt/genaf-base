@@ -45,11 +45,12 @@ class Query(object):
         self.specs = load_params(specs)
         self.dbhandler = dbhandler
         self.kwargs = kwargs
+        self._sample_sets = None
 
     def get_sample_sets(self, sample_ids = None):
         if self._sample_sets is None or sample_ids:
             self._sample_sets = super().get_sample_sets(sample_ids)
-            differentiator = self._params.get('differentiator', None)
+            differentiator = self.specs.get('differentiator', None)
             if differentiator:
                 self._sample_sets = differentiator.get_sample_sets( self._sample_sets )
         return self._sample_sets
@@ -173,10 +174,28 @@ class FieldBuilder(object):
 
 class Selector(object):
 
+    """
+        selector specs:
+
+            group_ids:  [current group ids of users]
+            samples:
+                '*' :
+                    - { batch_id: 20,  }
+                    - { batch_id: 30, }
+
+        AND operator works in each spec list
+        OR operator works when combining list
+
+    """
+
     def __init__(self, private=False, group_ids = None):
         super().__init__()
-        self.private = private
-        self.group_ids = group_ids
+        self.private = private      # applying to both private and public samples
+        self.group_ids = group_ids  # current user's group ids for sample authorization
+        self.samples = {}
+
+    def update_samples(self):
+        pass
 
 
     def get_fieldbuilder(self, dbh):
@@ -275,6 +294,12 @@ class Selector(object):
         else:
             return identifier == dbh.EK._id( arg.strip() )
 
+    @classmethod
+    def from_dict(cls, d):
+        selector = cls(private = d.get('private', False), group_ids = d.get('group_ids', None))
+        selector.samples = d.get('samples', {})
+
+        
 
 class Filter(object):
     pass
