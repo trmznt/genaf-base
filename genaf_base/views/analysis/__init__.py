@@ -1,11 +1,38 @@
 
 from genaf_base.lib.taskqueue import TaskQueue, DummyNS
 from genaf_base.lib.query import Selector, Query
+from genaf_base.lib.configs import get_temp_path, TEMP_TOOLS
+
 from rhombus.lib.tags import *
 from rhombus.lib.utils import get_dbhandler
 from rhombus.views import m_roles
 from rhombus.lib.roles import *
+from rhombus.lib import fsoverlay
+
 from pyramid.renderers import render_to_response
+
+
+def get_fso_temp_dir(userid, rootdir = TEMP_TOOLS):
+    """ return a fileoverlay object on temporary directory
+    """
+
+    absrootdir = get_temp_path('', rootdir)
+    fso_dir = fsoverlay.mkranddir(absrootdir, userid)
+    return fso_dir
+
+def do_analysis(query, userinstance, ns, *args, **kwargs):
+    """
+        this analysis method has to be performed and detached from viewer
+        classes as it might be executed in other process through
+        multiprocessing pipeline where all local instances might not be
+        available anymore.
+    """
+
+    dbh = get_dbhandler()
+
+    ns.result['title'] = 'Dummy Analysis Result'
+
+    return True
 
 
 class AnalyticViewer(object):
@@ -37,7 +64,7 @@ class AnalyticViewer(object):
                 ok = analysis_task(self.get_callback(), self.request.user, params2specs(params), ns)
                 html, jscode = self.format_result(ns.result)
 
-            return render_to_request( 'genaf_base:templates/generics/page.py',
+            return render_to_response( 'genaf_base:templates/generics/page.mako',
                         {   'html': html,
                             'jscode': jscode,
                         }, request = self.request
@@ -162,9 +189,16 @@ class AnalyticViewer(object):
 
         return job
 
+    def format_result(self, result):
+        """ should return (html, jscode) combination
+        """
 
-    def get_callback(self):
-        return None
+        return (div('AnalyticViewer: Not implemented!'), '')
+
+
+    @classmethod
+    def get_callback(cls):
+        return cls.callback
 
 
 def params2specs(params, group_ids=None):
