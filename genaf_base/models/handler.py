@@ -34,7 +34,11 @@ class DBHandler(rhombus_handler.DBHandler):
             q = q.filter( or_( self.Batch.group_id.in_( [ x[1] for x in groups ] ), self.Batch.public == True ) )
         q = q.order_by( self.Batch.code )
 
-        return q.all()        
+        return q.all()
+
+
+    def get_location_by_id(self, loc_id):
+        return self.Location.query(self.session()).get(loc_id)
 
     # search methods
 
@@ -42,5 +46,3 @@ class DBHandler(rhombus_handler.DBHandler):
                 auto=False):
         return self.Location.search(country, level1, level2, level3, level4, auto,
                     dbsession = self.session())
-
-
