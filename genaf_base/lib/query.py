@@ -47,18 +47,18 @@ class Query(object):
         self.kwargs = kwargs
         self._initial_sample_sets = None
 
-    def get_initial_sample_sets(self, sample_ids = None):
+    def get_sample_sets(self, sample_ids = None):
         if self._initial_sample_sets is None or sample_ids:
             #self._initial_sample_sets = super().get_initial_sample_sets(sample_ids)
             selector = self.specs['selector']
-            self._initial_sample_sets = selector.get_sample_sets(
+            self._sample_sets = selector.get_sample_sets(
                                                         self.dbhandler, sample_ids )
             differentiator = self.specs.get('differentiator', None)
             if differentiator:
-                self._initial_sample_sets = differentiator.get_sample_sets(
-                                                        self._initial_sample_sets,
+                self._sample_sets = differentiator.get_sample_sets(
+                                                        self._sample_sets,
                                                         self.dbhandler )
-        return self._initial_sample_sets
+        return self._sample_sets
 
 
 class FieldBuilder(object):
