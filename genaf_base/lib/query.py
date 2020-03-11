@@ -1,7 +1,7 @@
 
 #from spatools.lib.analytics import query
-#from spatools.lib.analytics import selector
-#from spatools.lib.analytics.sampleset import SampleSet, SampleSetContainer
+from spatools.lib.analytics import selector
+from spatools.lib.analytics.sampleset import SampleSet, SampleSetContainer
 
 from rhombus.lib.utils import get_dbhandler
 
@@ -42,18 +42,23 @@ class Query(object):
     """
 
     def __init__(self, specs, dbhandler, **kwargs):
-        self.specs = load_params(specs)
+        self.specs = load_params(specs)     # create instances of selector, filter and differentiator
         self.dbhandler = dbhandler
         self.kwargs = kwargs
-        self._sample_sets = None
+        self._initial_sample_sets = None
 
-    def get_sample_sets(self, sample_ids = None):
-        if self._sample_sets is None or sample_ids:
-            self._sample_sets = super().get_sample_sets(sample_ids)
+    def get_initial_sample_sets(self, sample_ids = None):
+        if self._initial_sample_sets is None or sample_ids:
+            #self._initial_sample_sets = super().get_initial_sample_sets(sample_ids)
+            selector = self.specs['selector']
+            self._initial_sample_sets = selector.get_sample_sets(
+                                                        self.dbhandler, sample_ids )
             differentiator = self.specs.get('differentiator', None)
             if differentiator:
-                self._sample_sets = differentiator.get_sample_sets( self._sample_sets )
-        return self._sample_sets
+                self._initial_sample_sets = differentiator.get_sample_sets(
+                                                        self._initial_sample_sets,
+                                                        self.dbhandler )
+        return self._initial_sample_sets
 
 
 class FieldBuilder(object):
@@ -172,7 +177,7 @@ class FieldBuilder(object):
 
 
 
-class Selector(object):
+class Selector(selector.Selector):
 
     """
         selector specs:
@@ -298,6 +303,7 @@ class Selector(object):
     def from_dict(cls, d):
         selector = cls(private = d.get('private', False), group_ids = d.get('group_ids', None))
         selector.samples = d.get('samples', {})
+        return selector
 
         
 
@@ -331,19 +337,19 @@ class Differentiator(object):
         return diff
 
 
-    def get_sample_sets(self, sample_sets):
+    def get_sample_sets(self, sample_sets, dbh):
 
-        diff_sample_sets = self.do_differentiation( sample_sets )
+        diff_sample_sets = self.do_differentiation( sample_sets, dbh )
 
         return self.generate_sample_sets( diff_sample_sets )
 
 
-    def do_differentiation(self, sample_sets):
+    def do_differentiation(self, sample_sets, dbh):
         """ return a dict of { tag: sample_ids } """
 
         curr_sample_sets = [ (s.label, s.sample_ids) for s in sample_sets ]
 
-        dbh = self.dbh
+        #bh = self.dbh
 
         new_sample_sets = OrderedDict()
 
@@ -356,7 +362,7 @@ class Differentiator(object):
                         ).filter( dbh.Sample.id.in_(sample_ids))
 
             rows = [
-                (int(s_id), self.render_location(loc_id), yr, mo,
+                (int(s_id), self.render_location(loc_id, dbh), yr, mo,
                     int1, int2, str1, str2)
                 for (s_id, loc_id, yr, mo, int1, int2, str1, str2) in q
             ]
@@ -420,7 +426,7 @@ class Differentiator(object):
         return sample_sets
 
 
-    def render_location(self, location_id):
+    def render_location(self, location_id, dbh):
         if self.spatial < 0:
             return ''
 
@@ -429,13 +435,14 @@ class Differentiator(object):
         except KeyError:
             pass
 
-        location = self.dbh.get_location_by_id(location_id)
+        location = dbh.get_location_by_id(location_id)
         render = location.render(self.spatial)
         self.location_cache[location_id] = render
         return render
 
 
-
+# selector and differentiator are common for all type of data (MS and SNP)
+# filter class is specific for the type of data
 _SELECTOR_CLASS_ = Selector
 _FILTER_CLASS_ = Filter
 _DIFFERENTIATOR_CLASS_ = Differentiator
