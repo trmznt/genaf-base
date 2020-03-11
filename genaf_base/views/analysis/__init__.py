@@ -61,7 +61,9 @@ class AnalyticViewer(object):
                 html, jscode = self.format_taskid(taskid)
             else:
                 ns = DummyNS()
-                ok = analysis_task(self.get_callback(), self.request.user, params2specs(params), ns)
+                ok = analysis_task(self.get_callback(), self.request.user,
+                            self.params2specs(params), ns
+                            )
                 html, jscode = self.format_result(ns.result)
 
             return render_to_response( 'genaf_base:templates/generics/page.mako',
@@ -128,9 +130,18 @@ class AnalyticViewer(object):
 
             input_select('genaf-query.sample_selection', 'Sample selection',
                 offset=2, size=3,
+                value='P',
+                options = [ ('F', 'All field samples' ),
+                            ('P', 'All population (day-0) samples')
+                    ]
+                ),
+
+            input_select('genaf-query.sample_filtering', 'Sample filtering',
+                offset=2, size=3,
                 value='N',
-                options = [ ('N', 'No futher sample selection'),
+                options = [ ('N', 'No futher sample filtering'),
                             ('M', 'Monoclonal samples'),
+                            ('U', 'Unique genotype samples')
                         ]
                 ),
 
@@ -168,7 +179,8 @@ class AnalyticViewer(object):
 
         d = {}
 
-        d['batch_ids'] = params.get('genaf-query.batch_ids')
+        d['batch_ids'] = params.getall('genaf-query.batch_ids')
+        d['spatial'] = int(params.get('genaf-query.spatial_differentiation', -1))
         # XXX: we need to check batch_ids here
 
         return d
@@ -200,6 +212,9 @@ class AnalyticViewer(object):
     def get_callback(cls):
         return cls.callback
 
+    def params2specs(self, params, group_ids=None):
+        return params2specs(params, group_ids)
+
 
 def params2specs(params, group_ids=None):
     """ convert params (dictionary from web-form) to dict-bases specs """
@@ -207,10 +222,28 @@ def params2specs(params, group_ids=None):
         # all group_ids where a user belongs to
         'group_ids': group_ids,
 
+        # using private or public samples
+        'private': True,
+
         # all batch_ids where sample will be fetched from
-        'batch_ids': params.get('batch_ids', None)
+        'samples': {
+        }
     }
-    return { 'selector': selector }
+
+    # if using forms:
+    batch_ids = params.get('batch_ids', None)
+    if batch_ids is not None:
+        selector['samples']['*'] = [ { 'batch_id': int(d) }
+                                            for d in batch_ids
+                                    ]
+
+
+    differentiator = {
+            'spatial': params.get('spatial', -1),
+            'temporal': params.get('temporal', 0),
+    }
+
+    return { 'selector': selector, 'differentiator': differentiator }
 
 
 def analysis_task(callback, userinstance, specs, namespace):
