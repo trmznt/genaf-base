@@ -20,6 +20,7 @@ def render_analyze_menu(request):
 			("Haplotype Analysis", "/tools/haplotype"),
 			("FST Analysis", "/tools/fst"),
 			("PI (diversity) Analysis", "/tools/pi"),
+			("LD Analysis", "/tools/ld"),
 			("PCA/PCoA", "/tools/pca"),
 			("NJ Tree", "/tools/nj"),
 			("COI Analysis", "/tools/coi")
