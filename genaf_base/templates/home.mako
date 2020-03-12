@@ -1,6 +1,6 @@
 <%inherit file="genaf_base:templates/base.mako" />
 
-<h1>GenAF-base :: Genotyping Analysis Network (base system)</h1>
+<h1>${request.get_resource('genaf.text', None) or "GenAF-base :: Genotyping Analysis Network (base system)"}</h1>
 
 <p>Welcome, user!</p>
 
