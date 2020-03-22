@@ -311,6 +311,11 @@ class Filter(object):
     pass
 
 
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
 class Differentiator(object):
 
     def __init__(self):
@@ -354,18 +359,20 @@ class Differentiator(object):
         new_sample_sets = OrderedDict()
 
         for (label, sample_ids) in curr_sample_sets:
-            q = dbh.session().query( dbh.Sample.id, dbh.Sample.location_id,
+            rows = []
+            for partial_sample_ids in chunks(list(sample_ids), 500):
+                q = dbh.session().query( dbh.Sample.id, dbh.Sample.location_id,
                         extract('year', dbh.Sample.collection_date),
                         extract('month', dbh.Sample.collection_date),
                         dbh.Sample.int1, dbh.Sample.int2,
                         dbh.Sample.string1, dbh.Sample.string2
-                        ).filter( dbh.Sample.id.in_(sample_ids))
+                        ).filter( dbh.Sample.id.in_(partial_sample_ids))
 
-            rows = [
-                (int(s_id), self.render_location(loc_id, dbh), yr, mo,
-                    int1, int2, str1, str2)
-                for (s_id, loc_id, yr, mo, int1, int2, str1, str2) in q
-            ]
+                rows.extend(
+                    (int(s_id), self.render_location(loc_id, dbh), yr, mo,
+                        int1, int2, str1, str2)
+                    for (s_id, loc_id, yr, mo, int1, int2, str1, str2) in q
+                )
 
             if not len(rows) > 0:
                 continue
