@@ -175,6 +175,8 @@ class AnalyticViewer(object):
                 options = [
                                 ('ggplot2', 'ggplot2 standard continuous 16 colours'),
                                 ('hue20', 'IWantHue categorical 20 colours'),
+                                ('vega20', 'Vega categorical 20 colours'),
+                                ('cb12', 'ColorBrewer2 categorical 12 colours'),
                 ],
                 multiple=False,
                 ),
