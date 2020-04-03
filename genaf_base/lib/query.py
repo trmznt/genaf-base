@@ -31,7 +31,7 @@ def load_params( d ):
         elif k == 'differentiator':
             instances['differentiator'] = _DIFFERENTIATOR_CLASS_.from_dict( d[k], options )
         elif k == 'options':
-            pass
+            instances['options'] = options
         else:
             raise RuntimeError()
 
