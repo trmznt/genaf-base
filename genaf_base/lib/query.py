@@ -21,16 +21,17 @@ def load_yaml(yaml_text):
 
 def load_params( d ):
     instances = {}
+    options = d.get('options', {'colour_scheme': 'hue20'})
     for k in d:
         if k == 'selector':
-            instances['selector'] = _SELECTOR_CLASS_.from_dict( d[k] )
+            instances['selector'] = _SELECTOR_CLASS_.from_dict( d[k], options )
             print(instances['selector'])
         elif k == 'filter':
-            instances['filter'] = _FILTER_CLASS_.from_dict( d[k] )
+            instances['filter'] = _FILTER_CLASS_.from_dict( d[k], options )
         elif k == 'differentiator':
-            instances['differentiator'] = _DIFFERENTIATOR_CLASS_.from_dict( d[k] )
+            instances['differentiator'] = _DIFFERENTIATOR_CLASS_.from_dict( d[k], options )
         elif k == 'options':
-            instances['options'] = d[k]
+            pass
         else:
             raise RuntimeError()
 
@@ -193,12 +194,12 @@ class Selector(selector.Selector):
 
     """
 
-    def __init__(self, private=False, group_ids = None, colour_scheme='hue20'):
+    def __init__(self, private=False, group_ids = None):
         super().__init__()
         self.private = private      # applying to both private and public samples
         self.group_ids = group_ids  # current user's group ids for sample authorization
-        self.colour_scheme = colour_scheme
         self.samples = {}
+        self.options = None
 
     def update_samples(self):
         pass
@@ -301,11 +302,11 @@ class Selector(selector.Selector):
             return identifier == dbh.EK._id( arg.strip() )
 
     @classmethod
-    def from_dict(cls, d):
+    def from_dict(cls, d, opts):
         print(d)
         selector = cls( private = d.get('private', False),
-                        group_ids = d.get('group_ids', None),
-                        colour_scheme = d.get('colour_scheme', 'hue20'))
+                        group_ids = d.get('group_ids', None))
+        selector.options = opts
         selector.samples = d.get('samples', {})
         return selector
 
@@ -329,6 +330,7 @@ class Differentiator(object):
         self.int2 = None
         self.string1 = None
         self.string2 = None
+        self.options = None
 
         #helpers
         self.location_renderer = None
@@ -338,11 +340,12 @@ class Differentiator(object):
         self.dbh = None
 
 
-    @staticmethod
-    def from_dict(d):
-        diff = Differentiator()
+    @classmethod
+    def from_dict(cls, d, opts):
+        diff = cls()
         diff.spatial = d['spatial']
         diff.temporal = d['temporal']
+        diff.options = opts
         return diff
 
 
@@ -424,7 +427,7 @@ class Differentiator(object):
     def generate_sample_sets(self, sample_set_dict):
         """ given a dict of sample sets, create proper SampleSet """
 
-        colours = cycle(selector.colour_list)
+        colours = cycle(selector.colour_scheme[self.options['colour_scheme']])
         sample_sets = SampleSetContainer()
 
         for (tag, sample_ids) in sample_set_dict.items():

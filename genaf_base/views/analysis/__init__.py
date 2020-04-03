@@ -176,7 +176,7 @@ class AnalyticViewer(object):
                                 ('ggplot2', 'ggplot2 standard continuous 16 colours'),
                                 ('hue20', 'IWantHue categorical 20 colours'),
                                 ('vega20', 'Vega categorical 20 colours'),
-                                ('cb12', 'ColorBrewer2 categorical 12 colours'),
+                                ('cb2', 'ColorBrewer2 categorical 12 colours'),
                 ],
                 multiple=False,
                 ),
@@ -226,7 +226,7 @@ class AnalyticViewer(object):
 
     def params2specs(self, params, group_ids=None):
         specs = params2specs(params, group_ids)
-        specs['selector']['colour_scheme'] = params.get('colour_scheme')
+        specs['options']['colour_scheme'] = params.get('colour_scheme')
         return specs
 
 
@@ -257,7 +257,7 @@ def params2specs(params, group_ids=None):
             'temporal': params.get('temporal', 0),
     }
 
-    return { 'selector': selector, 'differentiator': differentiator }
+    return { 'selector': selector, 'differentiator': differentiator, 'options': {} }
 
 
 def analysis_task(callback, userinstance, specs, namespace):
