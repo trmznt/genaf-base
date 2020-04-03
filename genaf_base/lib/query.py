@@ -193,10 +193,11 @@ class Selector(selector.Selector):
 
     """
 
-    def __init__(self, private=False, group_ids = None):
+    def __init__(self, private=False, group_ids = None, colour_scheme='hue20'):
         super().__init__()
         self.private = private      # applying to both private and public samples
         self.group_ids = group_ids  # current user's group ids for sample authorization
+        self.colour_scheme = colour_scheme
         self.samples = {}
 
     def update_samples(self):
@@ -301,7 +302,10 @@ class Selector(selector.Selector):
 
     @classmethod
     def from_dict(cls, d):
-        selector = cls(private = d.get('private', False), group_ids = d.get('group_ids', None))
+        print(d)
+        selector = cls( private = d.get('private', False),
+                        group_ids = d.get('group_ids', None),
+                        colour_scheme = d.get('colour_scheme', 'hue20'))
         selector.samples = d.get('samples', {})
         return selector
 

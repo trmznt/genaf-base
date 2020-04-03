@@ -104,6 +104,7 @@ class AnalyticViewer(object):
             fieldset(name='genaf-query.sample-source'),
             fieldset(name='genaf-query.sample-processing'),
             fieldset(name='genaf-query.allele-params'),
+            fieldset(name='genaf-query.custom-options'),
 
             custom_submit_bar(('Execute', 'execute'), ),
 
@@ -168,8 +169,16 @@ class AnalyticViewer(object):
                             (1, 'Yearly'),
                             (2, 'Quaterly')]
                 ),
-        )
 
+            input_select('genaf-query.colour_scheme',  'Colour scheme', offset=2, size=3,
+                value='hue20',
+                options = [
+                                ('ggplot2', 'ggplot2 standard continuous 16 colours'),
+                                ('hue20', 'IWantHue categorical 20 colours'),
+                ],
+                multiple=False,
+                ),
+        )
 
         return qform, jscode
 
@@ -181,6 +190,7 @@ class AnalyticViewer(object):
 
         d['batch_ids'] = params.getall('genaf-query.batch_ids')
         d['spatial'] = int(params.get('genaf-query.spatial_differentiation', -1))
+        d['colour_scheme'] = params.get('genaf-query.colour_scheme')
         # XXX: we need to check batch_ids here
 
         return d
@@ -213,7 +223,9 @@ class AnalyticViewer(object):
         return cls.callback
 
     def params2specs(self, params, group_ids=None):
-        return params2specs(params, group_ids)
+        specs = params2specs(params, group_ids)
+        specs['selector']['colour_scheme'] = params.get('colour_scheme')
+        return specs
 
 
 def params2specs(params, group_ids=None):
