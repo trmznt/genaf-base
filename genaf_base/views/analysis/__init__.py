@@ -5,7 +5,7 @@ from genaf_base.lib.configs import get_temp_path, TEMP_TOOLS
 
 from rhombus.lib.tags import *
 from rhombus.lib.utils import get_dbhandler
-from rhombus.views import m_roles
+from rhombus.views import m_roles, roles
 from rhombus.lib.roles import *
 from rhombus.lib import fsoverlay
 
