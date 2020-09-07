@@ -67,7 +67,8 @@ def includeme( config ):
 
     )
 
-    # analysis part
+    # ANALYSIS PART
+
     config.add_route('analysis-samplesummary', '/analysis/samplesummary')
     config.add_view('genaf_base.views.analysis.samplesummary.SampleSummary', route_name='analysis-samplesummary')
 
