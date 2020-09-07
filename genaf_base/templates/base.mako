@@ -68,7 +68,8 @@
       <div class='row'>
       <div class='col-md-12'>
         <!-- font: Nobile -->
-        <p>(C) 2018 Eijkman Institute for Molecular Biology, Indonesia</p>
+        <p>(C) 2020 Eijkman Institute for Molecular Biology, Indonesia <br>
+           (C) 2020 Menzies School of Health Research, Australia</p>
       </div>
       </div>
     </div>
