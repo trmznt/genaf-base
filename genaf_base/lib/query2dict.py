@@ -140,7 +140,7 @@ class EvalSetOp(QueryExpr):
 
 arg_expr.setParseAction( EvalArgExpr )
 
-cmd_expr = operatorPrecedence( operand,
+cmd_expr = infixNotation( operand,
     [   (negop, 1, opAssoc.RIGHT, EvalNegOp),
         (setop, 2, opAssoc.LEFT, EvalSetOp)
     ])
