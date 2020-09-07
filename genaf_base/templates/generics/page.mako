@@ -2,8 +2,10 @@
 
 % if html:
 ${ html }
-% else:
+% elif content:
 ${ content | n }
+% else:
+<p>No HTML nor content</p>
 % endif
 
 ##
