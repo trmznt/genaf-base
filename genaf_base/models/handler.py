@@ -40,6 +40,9 @@ class DBHandler(rhombus_handler.DBHandler):
     def get_location_by_id(self, loc_id):
         return self.Location.query(self.session()).get(loc_id)
 
+    def get_countries(self):
+        return self.Location.get_countries(self.session())
+
     # search methods
 
     def search_location(self, country='', level1='', level2='', level3='', level4='',

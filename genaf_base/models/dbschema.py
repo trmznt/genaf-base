@@ -133,12 +133,21 @@ class Location(BaseMixIn, Base, LocationMixIn):
 
     @staticmethod
     def grep(term, dbsession):
-        regions = EK.get_members('@REGION', dbsession).filter( EK.key.contains( term.lower() ) )
+        regions = EK.getmembers('@REGION', dbsession).filter( EK.key.contains( term.lower() ) )
         ids = [ r.id for r in regions ]
         return Location.query(dbsession).filter(
             or_( Location.country_id.in_( ids ), Location.level1_id.in_( ids ),
                 Location.level2_id.in_( ids ), Location.level3_id.in_( ids ),
                 Location.level4_id.in_( ids ) ) )
+
+    @staticmethod
+    def get_countries(dbsession):
+        countries = set()
+        regions = Location.query(dbsession)
+        for r in regions:
+            countries.add( r.country )
+        countries = sorted(list(countries))
+        return [ (c,c) for c in countries ]
 
 
     def render(self, level=4):

@@ -129,6 +129,13 @@ class AnalyticViewer(object):
 
         qform.get('genaf-query.sample-processing').add(
 
+            input_select('genaf-query.sample_countries', 'Sample origin',
+                offset=2, size=3,
+                multiple=True,
+                value=[],
+                options = self.dbh.get_countries(),
+                ),
+
             input_select('genaf-query.sample_selection', 'Sample selection',
                 offset=2, size=3,
                 value='P',
